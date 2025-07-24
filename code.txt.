@@ -1,0 +1,66 @@
+#include <Wire.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+
+#define SCREEN_WIDTH 128
+#define SCREEN_HEIGHT 64
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
+
+#define sensorIn 2
+#define sensorOut 3
+#define buzzer 8 // optional
+
+int count = 0;
+
+void setup() {
+  pinMode(sensorIn, INPUT);
+  pinMode(sensorOut, INPUT);
+  pinMode(buzzer, OUTPUT);
+  
+  Serial.begin(9600);
+  
+  if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
+    Serial.println(F("OLED failed"));
+    for (;;);
+  }
+  
+  display.clearDisplay();
+  display.setTextColor(WHITE);
+  display.setTextSize(1);
+  display.setCursor(0, 0);
+  display.print("Visitor Counter");
+  display.display();
+  delay(1000);
+}
+
+void loop() {
+  if (digitalRead(sensorIn) == LOW) {
+    delay(300);
+    if (digitalRead(sensorOut) == LOW) {
+      count++;
+      buzz();
+    }
+  }
+
+  if (digitalRead(sensorOut) == LOW) {
+    delay(300);
+    if (digitalRead(sensorIn) == LOW) {
+      if (count > 0) count--;
+      buzz();
+    }
+  }
+
+  display.clearDisplay();
+  display.setTextSize(2);
+  display.setCursor(10, 20);
+  display.print("Count: ");
+  display.print(count);
+  display.display();
+  delay(100);
+}
+
+void buzz() {
+  digitalWrite(buzzer, HIGH);
+  delay(100);
+  digitalWrite(buzzer, LOW);
+}
